@@ -40,9 +40,6 @@ Current available parameters:
 bool enableReverseDirection;
 bool decoderWorkMode; // 0 = Normal mode, 1 = PHASEA input generates a count signal while PHASEB input control the direction. 
 
-/* Signal detection. */
-uint8_t HOMETriggerMode;   //0 - disable, 1 - rising, 2 - falling
-uint8_t INDEXTriggerMode; //0 - disabled, 1 - Use positive going edge-to-trigger initialization of position counters!, 2 - use falling
 bool clearCounter;  
 bool clearHoldCounter; 
 
@@ -53,22 +50,6 @@ uint16_t filterCount;
 /* Input Filter Sample Period. This value should be set such that the sampling period is larger than the period of the expected noise. This value represents the sampling period (in IPBus clock cycles) of the decoder input signals.	The available range is 0 - 255. */
 uint16_t filterSamplePeriod; 
 
-/* Position compare. */
-/* 0 - POSMATCH pulses when a match occurs between the	position counters (POS) and the compare value (COMP). 1 - POSMATCH pulses when any position counter register is read. */
-bool positionMatchMode;
-		
-/* Position compare value. The available value is a 32-bit number.*/
-uint32_t positionCompareValue;   
-
-/* Modulus counting. */
-/*0 - Use INDEX pulse to increment/decrement revolution counter. 1 - Use modulus counting roll-over/under to increment/decrement revolution counter. */ 
-bool revolutionCountCondition; 	
-								
-bool enableModuloCountMode;     //Enable Modulo Counting. */
-		
-/*Position modulus value. This value would be available only when			"enableModuloCountMode" = true. The available value is a 32-bit number. */
-uint32_t positionModulusValue;  
-		
 //Position initial value. The available value is a 32-bit number. */
 uint32_t positionInitialValue; 
 
