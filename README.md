@@ -9,4 +9,12 @@ The constuctor is designed to tell the library what encoder channel, PhaseA and 
 ``` 
 QuadEncoder myEnc1(1, 0, 1, 0);  // Encoder on channel 1 of 4 available
                                  // Phase A (pin0), PhaseB(pin1), Pullups Req(0)
+QuadEncoder myEnc2(2, 2, 3, 0);  // Encoder on channel 2 of 4 available
+                                 //Phase A (pin2), PhaseB(pin3), Pullups Req(0)
 ```
+
+In setup the encoder is initialized as:
+```
+  myEnc1.setInitConfig();  //Loads default configuration for the encoder channel
+  myEnc1.init();           //Initializers the encoder for the channel selected
+ ```
