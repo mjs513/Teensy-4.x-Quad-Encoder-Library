@@ -4,7 +4,7 @@
 //#define DEBUG_OUTPUT
 
 const QuadEncoder::ENC_Channel_t QuadEncoder::channel[] = {	
-	{0,&IMXRT_ENC1, IRQ_ENC1, 66, 67, 68, 69, 70,&CCM_CCGR4,CCM_CCGR4_ENC1(CCM_CCGR_ON)},
+	{0,&IMXRT_ENC1, IRQ_ENC1, 66, 67, 68, 69, 70,&CCM_CCGR4,CCM_CCGR4_ENC1(CCM_CCGR_ON)},  //this is a dummy entry - use 1-4 for channels
 	{1, &IMXRT_ENC1, IRQ_ENC1, 66, 67, 68, 69, 70,&CCM_CCGR4,CCM_CCGR4_ENC1(CCM_CCGR_ON)},
 	{2, &IMXRT_ENC2, IRQ_ENC2, 71, 72, 73, 74, 75,&CCM_CCGR4,CCM_CCGR4_ENC2(CCM_CCGR_ON)},
 	{3, &IMXRT_ENC3, IRQ_ENC3, 76, 77, 78, 79, 80,&CCM_CCGR4,CCM_CCGR4_ENC3(CCM_CCGR_ON)},
@@ -22,27 +22,31 @@ const  QuadEncoder::ENC_Hardware_t QuadEncoder::hardware[] = {
 };
 const uint8_t QuadEncoder::_hardware_count =  (sizeof(QuadEncoder::hardware)/sizeof(QuadEncoder::hardware[0]));
 
-void QuadEncoder::begin(uint8_t PhaseA_pin, uint8_t PhaseB_pin, uint8_t pin_pus){
+void QuadEncoder::setInitConfig() {
+  getConfig1(&EncConfig);
+}
 
-  CCM_CCGR2 |= CCM_CCGR2_XBAR1(CCM_CCGR_ON);   //turn clock on for xbara1
-  Serial.printf("begin: encoder channel-> %d\n",_encoder_ch);
-  Serial.printf("begin: pinA-> %d, pinB-> %d\n", PhaseA_pin, PhaseB_pin);
-  
-  enc_xbara_mapping(PhaseA_pin, PHASEA, pin_pus);
-  enc_xbara_mapping(PhaseB_pin, PHASEB, pin_pus);
-  
-  getConfig(&mEncConfigStruct);
-  Init(&mEncConfigStruct);
-  
+void QuadEncoder::init()
+{
+  Init(&EncConfig);
   setInitialPosition();
 }
 
 
-QuadEncoder::QuadEncoder(uint8_t encoder_ch){
+QuadEncoder::QuadEncoder(uint8_t encoder_ch, uint8_t PhaseA_pin, uint8_t PhaseB_pin, uint8_t pin_pus){
 	_encoder_ch = encoder_ch;
+	
+  CCM_CCGR2 |= CCM_CCGR2_XBAR1(CCM_CCGR_ON);   //turn clock on for xbara1
+  
+#ifdef DEBUG_OUTPUT
+  Serial.printf("begin: encoder channel-> %d\n",_encoder_ch);
+  Serial.printf("begin: pinA-> %d, pinB-> %d\n", PhaseA_pin, PhaseB_pin);
+#endif
+  enc_xbara_mapping(PhaseA_pin, PHASEA, pin_pus);
+  enc_xbara_mapping(PhaseB_pin, PHASEB, pin_pus);
 }
 
-void QuadEncoder::getConfig(enc_config_t *config)
+void QuadEncoder::getConfig1(enc_config_t *config)
 {
     /* Initializes the configure structure to zero. */
     memset(config, 0, sizeof(*config));

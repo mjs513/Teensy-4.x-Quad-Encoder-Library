@@ -57,7 +57,7 @@
 class QuadEncoder
 {
 public:
-	typedef struct _enc_config
+	typedef struct
 	{
 		/* Basic counter. */
 		bool enableReverseDirection;
@@ -119,16 +119,17 @@ public:
 		uint16_t		xbarIO;
 	} ENC_Hardware_t;
 	
-	enc_config_t mEncConfigStruct;
+	enc_config_t EncConfig;
 	static const ENC_Channel_t channel[];
 	static const ENC_Hardware_t hardware[];
 	static const uint8_t _channel_count;
 	static const uint8_t _hardware_count;
 public:
-	QuadEncoder(uint8_t encoder_ch = 1);
-	void getConfig(enc_config_t *config);
+	QuadEncoder(uint8_t encoder_ch = 1, uint8_t PhaseA_pin = 0, uint8_t PhaseB_pin = 1, uint8_t pin_pus = 0);
+	void getConfig1(enc_config_t *config);
 	void setInitialPosition();
-	void begin(uint8_t PhaseA_pin, uint8_t PhaseB_pin, uint8_t pin_pus);
+	void setInitConfig();
+	void init();
 	void Init(const enc_config_t *config);
 	uint32_t getPosition();
 	void setPosition(uint32_t value);
