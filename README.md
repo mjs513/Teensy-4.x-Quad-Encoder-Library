@@ -71,4 +71,7 @@ uint32_t positionModulusValue;
 		
 //Position initial value. The available value is a 32-bit number. */
 uint32_t positionInitialValue; 
+
+LIMITATION:
+To date only basic encoder functions have been implemented.
     ```
