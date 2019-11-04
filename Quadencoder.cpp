@@ -358,7 +358,7 @@ void QuadEncoder::disableInterrupts(uint32_t flag)
 
 }
 
-void QuadEncoder::clearStatusFlags(uint32_t flag)
+void QuadEncoder::clearStatusFlags(uint32_t flag, uint8_t index)
 {
     uint32_t tmp16 = 0U;
 
@@ -377,7 +377,7 @@ void QuadEncoder::clearStatusFlags(uint32_t flag)
     }
     if (0U != tmp16)
     {
-        IMXRT_ENC2.CTRL = (IMXRT_ENC2.CTRL & (uint16_t)(~ENC_CTRL_W1C_FLAGS)) | tmp16;
+        channel[index].ENC->CTRL = (channel[index].ENC->CTRL & (uint16_t)(~ENC_CTRL_W1C_FLAGS)) | tmp16;
     }
 }
 
@@ -415,21 +415,20 @@ void QuadEncoder::isr(uint8_t index)
 {
     if (ENC_CTRL_XIRQ_MASK == (ENC_CTRL_XIRQ_MASK & channel[index].ENC->CTRL))
     {
-		indexCounter++;
-		//Serial.println(indexCounter);Serial.flush();
-		clearStatusFlags(_INDEXPulseFlag);
+		indexCounter = indexCounter + 1;
+		clearStatusFlags(_INDEXPulseFlag, index);
 
 	}
 	
     if (ENC_CTRL_HIRQ_MASK == (ENC_CTRL_HIRQ_MASK & channel[index].ENC->CTRL))
     {
 		homeCounter++;
-		clearStatusFlags(_HOMETransitionFlag);
+		clearStatusFlags(_HOMETransitionFlag, index);
     }
 	
 	if (ENC_CTRL_CMPIRQ_MASK == (ENC_CTRL_CMPIRQ_MASK & channel[index].ENC->CTRL))
     {
 		compareValueFlag = 1;
-		clearStatusFlags(_positionCompareFlag);
+		clearStatusFlags(_positionCompareFlag, index);
 	}
 }

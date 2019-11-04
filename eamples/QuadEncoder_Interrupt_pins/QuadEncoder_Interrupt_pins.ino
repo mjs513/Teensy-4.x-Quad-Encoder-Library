@@ -14,7 +14,7 @@ void setup()
 
   /* Initialize the ENC module. */
   myEnc1.setInitConfig();
-  myEnc1.EncConfig.INDEXTriggerMode = DISABLE;
+  myEnc1.EncConfig.INDEXTriggerMode = RISING_EDGE;
 
   myEnc1.init();
   

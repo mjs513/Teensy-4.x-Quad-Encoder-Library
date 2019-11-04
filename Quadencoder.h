@@ -192,7 +192,7 @@ public:
 	//interrupts
 	void enableInterrupts(const enc_config_t *config);
 	void disableInterrupts(uint32_t flag);
-	void clearStatusFlags(uint32_t flag);
+	void clearStatusFlags(uint32_t flag, uint8_t index);
 	
 	// static class functions
 	static void isrEnc1();
