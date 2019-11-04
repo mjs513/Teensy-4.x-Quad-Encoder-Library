@@ -20,6 +20,10 @@
 #define ENC_CTRL_WDE_MASK                        (0x4U)
 #define ENC_CTRL_WDE_MASK                        (0x4U)
 #define ENC_CTRL_SWIP_MASK                       (0x800U)
+//interrupts
+#define ENC_CTRL_HIE_MASK                        (0x4000U)
+#define ENC_CTRL_XIE_MASK                        (0x80U)
+#define ENC_CTRL_CMPIE_MASK                      (0x1U)
 
 #define ENC_CTRL2_SABIRQ_MASK                    (0x800U)
 #define ENC_CTRL2_ROIRQ_MASK                     (0x80U)
@@ -29,6 +33,11 @@
 #define ENC_CTRL2_MOD_MASK                       (0x4U)
 #define ENC_CTRL2_UPDHLD_MASK                    (0x1U)
 #define ENC_CTRL2_UPDPOS_MASK                    (0x2U)
+//interrupts
+#define ENC_CTRL2_SABIRQ_MASK                    (0x800U)
+#define ENC_CTRL2_ROIRQ_MASK                     (0x80U)
+#define ENC_CTRL2_RUIRQ_MASK                     (0x20U)
+
 
 #define ENC_CTRL_W1C_FLAGS (ENC_CTRL_HIRQ_MASK | ENC_CTRL_XIRQ_MASK | ENC_CTRL_DIRQ_MASK | ENC_CTRL_CMPIRQ_MASK)
 #define ENC_CTRL2_W1C_FLAGS (ENC_CTRL2_SABIRQ_MASK | ENC_CTRL2_ROIRQ_MASK | ENC_CTRL2_RUIRQ_MASK)
@@ -37,11 +46,15 @@
 #define ENC_FILT_FILT_CNT(x)		(((uint16_t)(((uint16_t)(x)) << 8U)) & 0x700U)
 
 #define DISABLE				0
+#define ENABLE				1
 #define FALLING_EDGE		2
 #define RISING_EDGE			1
 
 #define PHASEA 1
 #define PHASEB 2
+#define INDEX 3
+#define HOME 4
+#define TRIGGER 5
 #define PULLUPS 0  //set to 1 if pullups are needed
 
 #define CORE_XIO_PIN0 IOMUXC_XBAR1_IN17_SELECT_INPUT	//ALT1
@@ -52,11 +65,36 @@
 #define CORE_XIO_PIN5 IOMUXC_XBAR1_IN17_SELECT_INPUT	//ALT3
 #define CORE_XIO_PIN7 IOMUXC_XBAR1_IN15_SELECT_INPUT	//ALT1
 #define CORE_XIO_PIN8 IOMUXC_XBAR1_IN14_SELECT_INPUT   	//ALT1
+#define CORE_XIO_PIN30 IOMUXC_XBAR1_IN23_SELECT_INPUT	//ALT1,0
+#define CORE_XIO_PIN31 IOMUXC_XBAR1_IN22_SELECT_INPUT	//ALT1,0
+#define CORE_XIO_PIN33 IOMUXC_XBAR1_IN09_SELECT_INPUT   //ALT3,0
 
+enum _flags
+{
+    _HOMETransitionFlag = (1 << 0),
+    _INDEXPulseFlag = (1 << 1),
+    _positionCompareFlag = (1 << 3),
+    _positionRollOverFlag = (1 << 5),
+    _positionRollUnderFlag = (1 << 6),
+    _lastDirectionFlag = (1 << 7),
 	
+};
+
+enum _interrupts
+{
+    _HOMETransitionEnable = (1 << 0),
+    _INDEXPulseEnable = (1 << 1), 
+    _positionCompareEnable = (1 << 3),
+    _positionROEnable = (1 << 5),
+    _positionRUEnable = (1 << 6),
+};
+
+
 class QuadEncoder
 {
 public:
+	void isr(uint8_t index);
+
 	typedef struct
 	{
 		/* Basic counter. */
@@ -89,11 +127,15 @@ public:
 								
 		bool enableModuloCountMode;     //Enable Modulo Counting. */
 		
-		/*Position modulus value. This value would be available only when			"enableModuloCountMode" = true. The available value is a 32-bit number. */
+		/*Position modulus value. This value would be available only when	"enableModuloCountMode" = true. The available value is a 32-bit number. */
 		uint32_t positionModulusValue;  
 		
 		//Position initial value. The available value is a 32-bit number. */
 		uint32_t positionInitialValue; 
+		
+		//Position Roll Over or Roll Under Interrupt Enable
+		uint8_t positionROIE = DISABLE;
+		uint8_t positionRUIE = DISABLE;
 	} enc_config_t;
 	
 	//encoder
@@ -101,6 +143,7 @@ public:
 		uint8_t			enc_ch;		
 		volatile IMXRT_ENC_t* 	ENC;
 		IRQ_NUMBER_t	interrupt;
+		void     		(*isr)();
 		uint16_t		phaseA;
 		uint16_t		phaseB;
 		uint16_t		index;
@@ -117,6 +160,7 @@ public:
 		volatile uint32_t *reg; // Which register controls the selection
 		const uint32_t		select_val;	// Value for that selection
 		uint16_t		xbarIO;
+		uint8_t			xbarMUX;
 	} ENC_Hardware_t;
 	
 	enc_config_t EncConfig;
@@ -124,26 +168,46 @@ public:
 	static const ENC_Hardware_t hardware[];
 	static const uint8_t _channel_count;
 	static const uint8_t _hardware_count;
+	
+
 public:
-	QuadEncoder(uint8_t encoder_ch = 1, uint8_t PhaseA_pin = 0, uint8_t PhaseB_pin = 1, uint8_t pin_pus = 0);
+	QuadEncoder(uint8_t encoder_ch = 255, uint8_t PhaseA_pin = 255, uint8_t PhaseB_pin = 255, uint8_t pin_pus = 0, uint8_t index_pin = 255, uint8_t home_pin = 255, uint8_t trigger_pin = 255);
 	void getConfig1(enc_config_t *config);
-	void setInitialPosition();
+	void setConfigInitialPosition();
 	void setInitConfig();
 	void init();
 	void Init(const enc_config_t *config);
 	uint32_t getPosition();
 	void setPosition(uint32_t value);
-	uint32_t ENC_getHoldPosition();
+	uint32_t getHoldPosition();
 	uint16_t getPositionDifference();
 	uint16_t getHoldDifference();
 	uint16_t getRevolution();
 	uint16_t getHoldRevolution();
+	
+	//xbara1 configuration
 	void enc_xbara_mapping(uint8_t pin, uint8_t PHASE, uint8_t PUS);
 	void xbar_connect(unsigned int input, unsigned int output);
 	
+	//interrupts
+	void enableInterrupts(const enc_config_t *config);
+	void disableInterrupts(uint32_t flag);
+	void clearStatusFlags(uint32_t flag);
+	
+	// static class functions
+	static void isrEnc1();
+	static void isrEnc2();
+	static void isrEnc3();
+	static void isrEnc4();
+	static inline void checkAndProcessInterrupt(uint8_t index);
+	
+	//counters
+	static uint32_t homeCounter;
+	static uint32_t indexCounter;
+	static uint8_t compareValueFlag;
 private:
-	uint16_t _encoder_ch, _pin_idx;
-
+	static QuadEncoder *list[5];
+	volatile uint16_t _encoder_ch, _pin_idx;
 
 };
 

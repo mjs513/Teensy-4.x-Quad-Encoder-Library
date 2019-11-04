@@ -4,24 +4,33 @@
 //#define DEBUG_OUTPUT
 
 const QuadEncoder::ENC_Channel_t QuadEncoder::channel[] = {	
-	{0,&IMXRT_ENC1, IRQ_ENC1, 66, 67, 68, 69, 70,&CCM_CCGR4,CCM_CCGR4_ENC1(CCM_CCGR_ON)},  //this is a dummy entry - use 1-4 for channels
-	{1, &IMXRT_ENC1, IRQ_ENC1, 66, 67, 68, 69, 70,&CCM_CCGR4,CCM_CCGR4_ENC1(CCM_CCGR_ON)},
-	{2, &IMXRT_ENC2, IRQ_ENC2, 71, 72, 73, 74, 75,&CCM_CCGR4,CCM_CCGR4_ENC2(CCM_CCGR_ON)},
-	{3, &IMXRT_ENC3, IRQ_ENC3, 76, 77, 78, 79, 80,&CCM_CCGR4,CCM_CCGR4_ENC3(CCM_CCGR_ON)},
-	{4, &IMXRT_ENC4, IRQ_ENC4, 81, 82, 83, 84, 95,&CCM_CCGR4,CCM_CCGR4_ENC4(CCM_CCGR_ON)}
+	{0,&IMXRT_ENC1, IRQ_ENC1, isrEnc1, 66, 67, 68, 69, 70,&CCM_CCGR4,CCM_CCGR4_ENC1(CCM_CCGR_ON)},  //this is a dummy entry - use 1-4 for channels
+	{1, &IMXRT_ENC1, IRQ_ENC1, isrEnc1, 66, 67, 68, 69, 70,&CCM_CCGR4,CCM_CCGR4_ENC1(CCM_CCGR_ON)},
+	{2, &IMXRT_ENC2, IRQ_ENC2, isrEnc2, 71, 72, 73, 74, 75,&CCM_CCGR4,CCM_CCGR4_ENC2(CCM_CCGR_ON)},
+	{3, &IMXRT_ENC3, IRQ_ENC3, isrEnc3, 76, 77, 78, 79, 80,&CCM_CCGR4,CCM_CCGR4_ENC3(CCM_CCGR_ON)},
+	{4, &IMXRT_ENC4, IRQ_ENC4, isrEnc4, 81, 82, 83, 84, 95,&CCM_CCGR4,CCM_CCGR4_ENC4(CCM_CCGR_ON)}
 };
 const uint8_t QuadEncoder::_channel_count =  (sizeof(QuadEncoder::channel)/sizeof(QuadEncoder::channel[0]));
 
 //xbara1 pin config
 //pin, idx, *reg, alt
 const  QuadEncoder::ENC_Hardware_t QuadEncoder::hardware[] = {	
-	{0, 0, &CORE_XIO_PIN0, 1, 17},	{1, 1, &CORE_XIO_PIN1, 1, 16},
-	{2, 2, &CORE_XIO_PIN2, 3, 6},	{3, 3, &CORE_XIO_PIN3, 3, 7},
-	{4, 4, &CORE_XIO_PIN4,3, 8},		{5, 5, &CORE_XIO_PIN5, 3, 17},
-	{7, 6, &CORE_XIO_PIN7, 1, 15},	{8, 7, &CORE_XIO_PIN8, 1, 14}
+	{0, 0, &CORE_XIO_PIN0, 1, 17, 1},	{1, 1, &CORE_XIO_PIN1, 1, 16, 0},
+	{2, 2, &CORE_XIO_PIN2, 3, 6, 0},	{3, 3, &CORE_XIO_PIN3, 3, 7, 0},
+	{4, 4, &CORE_XIO_PIN4,3, 8, 0},		{5, 5, &CORE_XIO_PIN5, 3, 17, 0},
+	{7, 6, &CORE_XIO_PIN7, 1, 15, 1},	{8, 7, &CORE_XIO_PIN8, 1, 14, 1},
+	{9, 30, &CORE_XIO_PIN30, 1, 22, 0},	{10, 31, &CORE_XIO_PIN31, 1, 23, 0},
+	{11, 33, &CORE_XIO_PIN33, 3, 9, 0}
 };
 const uint8_t QuadEncoder::_hardware_count =  (sizeof(QuadEncoder::hardware)/sizeof(QuadEncoder::hardware[0]));
 
+QuadEncoder * QuadEncoder::list[5];
+
+  uint8_t QuadEncoder::compareValueFlag;
+ uint32_t QuadEncoder::homeCounter;
+ uint32_t QuadEncoder::indexCounter;
+
+ 
 void QuadEncoder::setInitConfig() {
   getConfig1(&EncConfig);
 }
@@ -29,21 +38,34 @@ void QuadEncoder::setInitConfig() {
 void QuadEncoder::init()
 {
   Init(&EncConfig);
-  setInitialPosition();
+  setConfigInitialPosition();
+  enableInterrupts(&EncConfig);
 }
 
 
-QuadEncoder::QuadEncoder(uint8_t encoder_ch, uint8_t PhaseA_pin, uint8_t PhaseB_pin, uint8_t pin_pus){
-	_encoder_ch = encoder_ch;
+QuadEncoder::QuadEncoder(uint8_t encoder_ch, uint8_t PhaseA_pin, uint8_t PhaseB_pin, uint8_t pin_pus, uint8_t index_pin, uint8_t home_pin, uint8_t trigger_pin){
+	if(encoder_ch >= 0){
+	  _encoder_ch = encoder_ch;
 	
-  CCM_CCGR2 |= CCM_CCGR2_XBAR1(CCM_CCGR_ON);   //turn clock on for xbara1
+	CCM_CCGR2 |= CCM_CCGR2_XBAR1(CCM_CCGR_ON);   //turn clock on for xbara1
   
 #ifdef DEBUG_OUTPUT
-  Serial.printf("begin: encoder channel-> %d\n",_encoder_ch);
-  Serial.printf("begin: pinA-> %d, pinB-> %d\n", PhaseA_pin, PhaseB_pin);
+	Serial.printf("begin: encoder channel-> %d\n",_encoder_ch);
+	Serial.printf("begin: pinA-> %d, pinB-> %d\n", PhaseA_pin, PhaseB_pin);
 #endif
-  enc_xbara_mapping(PhaseA_pin, PHASEA, pin_pus);
-  enc_xbara_mapping(PhaseB_pin, PHASEB, pin_pus);
+	  if(PhaseA_pin != 255 )
+		enc_xbara_mapping(PhaseA_pin, PHASEA, pin_pus);
+	  if(PhaseA_pin != 255 )
+		enc_xbara_mapping(PhaseB_pin, PHASEB, pin_pus);
+	  if(home_pin != 255 )
+		 enc_xbara_mapping(home_pin, HOME, pin_pus);
+	  if(index_pin != 255 )
+		 enc_xbara_mapping(index_pin, INDEX, pin_pus);
+	  if(trigger_pin != 255 )
+		 enc_xbara_mapping(trigger_pin, TRIGGER, pin_pus);
+	} else {
+	  Serial.println("No Encoder Channel Selected!");
+	}
 }
 
 void QuadEncoder::getConfig1(enc_config_t *config)
@@ -51,23 +73,25 @@ void QuadEncoder::getConfig1(enc_config_t *config)
     /* Initializes the configure structure to zero. */
     memset(config, 0, sizeof(*config));
 
-    config->enableReverseDirection = false;
-    config->decoderWorkMode = false;
+    config->enableReverseDirection = DISABLE;
+    config->decoderWorkMode = DISABLE;
     config->HOMETriggerMode = DISABLE;
     config->INDEXTriggerMode = DISABLE;
-    config->clearCounter = false;
-    config->clearHoldCounter = false;
-    config->filterCount = 0U;
-    config->filterSamplePeriod = 0U;
-    config->positionMatchMode = false;
-    config->positionCompareValue = 0xFFFFFFFFU;
-    config->revolutionCountCondition = false;
-    config->enableModuloCountMode = false;
-    config->positionModulusValue = 0U;
-    config->positionInitialValue = 0U;
+    config->clearCounter = DISABLE;
+    config->clearHoldCounter = DISABLE;
+    config->filterCount = 0;
+    config->filterSamplePeriod = 0;
+    config->positionMatchMode = DISABLE;
+    config->positionCompareValue = 0;
+    config->revolutionCountCondition = DISABLE;
+    config->enableModuloCountMode = DISABLE;
+    config->positionModulusValue = 0;
+    config->positionInitialValue = 0;
+	config->positionROIE = DISABLE;
+	config->positionRUIE = DISABLE;
 }
 
-void QuadEncoder::setInitialPosition()
+void QuadEncoder::setConfigInitialPosition()
 {
     uint16_t tmp16 = channel[_encoder_ch].ENC->CTRL & (uint16_t)(~ENC_CTRL_W1C_FLAGS);
 
@@ -171,9 +195,11 @@ void QuadEncoder::setPosition(uint32_t value)
 {
     channel[_encoder_ch].ENC->UINIT = (uint16_t)(value >> 16U); /* Set upper 16 bits. */
     channel[_encoder_ch].ENC->LINIT = (uint16_t)(value);        /* Set lower 16 bits. */
+	
+	setConfigInitialPosition();
 }
 
-uint32_t QuadEncoder::ENC_getHoldPosition()
+uint32_t QuadEncoder::getHoldPosition()
 {
     uint32_t ret32;
 
@@ -184,56 +210,24 @@ uint32_t QuadEncoder::ENC_getHoldPosition()
     return ret32;
 }
 
-/*!
- * @brief  Get the position difference counter's value.
- *
- * @param  base ENC peripheral base address.
- *
- * @return     The position difference counter's value.
- */
+
 uint16_t QuadEncoder::getPositionDifference()
 {
     return channel[_encoder_ch].ENC->POSD;
 }
 
-/*!
- * @brief  Get the hold position difference counter's value.
- *
- * When any of the counter registers is read, the contents of each counter register is written to the corresponding hold
- * register. Taking a snapshot of the counters' values provides a consistent view of a system position and a velocity to
- * be attained.
- *
- * @param  base ENC peripheral base address.
- *
- * @return      Hold position difference counter's value.
- */
+
 uint16_t QuadEncoder::getHoldDifference()
 {
     return channel[_encoder_ch].ENC->POSDH;
 }
 
-/*!
- * @brief  Get the position revolution counter's value.
- *
- * @param  base ENC peripheral base address.
- *
- * @return     The position revolution counter's value.
- */
+
 uint16_t QuadEncoder::getRevolution()
 {
     return channel[_encoder_ch].ENC->REV;
 }
-/*!
- * @brief  Get the hold position revolution counter's value.
- *
- * When any of the counter registers is read, the contents of each counter register is written to the corresponding hold
- * register. Taking a snapshot of the counters' values provides a consistent view of a system position and a velocity to
- * be attained.
- *
- * @param  base ENC peripheral base address.
- *
- * @return      Hold position revolution counter's value.
- */
+
 uint16_t QuadEncoder::getHoldRevolution()
 {
     return channel[_encoder_ch].ENC->REVH;
@@ -242,7 +236,6 @@ uint16_t QuadEncoder::getHoldRevolution()
 void QuadEncoder::enc_xbara_mapping(uint8_t pin, uint8_t PHASE, uint8_t PUS){ 
 
   const struct digital_pin_bitband_and_config_table_struct *p;
-  uint32_t pinmode, mask;
 
   for (int idx_channel = 0; idx_channel < _hardware_count; idx_channel++) {
 	if (hardware[idx_channel].pin == pin) {
@@ -258,9 +251,7 @@ void QuadEncoder::enc_xbara_mapping(uint8_t pin, uint8_t PHASE, uint8_t PUS){
 #endif
 
   if (_pin_idx == _hardware_count) return;
-  
-  uint8_t xbara1_mux[] = {1, 0, 0, 0, 0, 0, 1, 1};
-  
+    
   p = digital_pin_to_info_PGM + hardware[_pin_idx].pin;
   //mux is ctrl config for pin
   //pad is pad config
@@ -278,16 +269,20 @@ void QuadEncoder::enc_xbara_mapping(uint8_t pin, uint8_t PHASE, uint8_t PUS){
   
   //x = xio_pin_to_info_PGM + pin;
   //*(x->reg) = xbara1_mux[pin];
-  *hardware[_pin_idx].reg = xbara1_mux[_pin_idx];
+  *hardware[_pin_idx].reg = hardware[_pin_idx].xbarMUX;
 #ifdef DEBUG_OUTPUT
   if(PHASE == 1) Serial.printf("xbarIO-> %d, PhaseA-> %d\n",hardware[_pin_idx].xbarIO, channel[_encoder_ch].phaseA);
   if(PHASE == 2)Serial.printf("xbarIO-> %d, PhaseB-> %d\n",hardware[_pin_idx].xbarIO, channel[_encoder_ch].phaseB);
+  if(PHASE == 3)Serial.printf("xbarIO-> %d, INDEX-> %d\n",hardware[_pin_idx].xbarIO, channel[_encoder_ch].index);
+  if(PHASE == 4)Serial.printf("xbarIO-> %d, HOME-> %d\n",hardware[_pin_idx].xbarIO, channel[_encoder_ch].home);
 #endif
 
   //XBARA1 Connection to encoder
   if(PHASE == 1) xbar_connect(hardware[_pin_idx].xbarIO, channel[_encoder_ch].phaseA);
   if(PHASE == 2) xbar_connect(hardware[_pin_idx].xbarIO, channel[_encoder_ch].phaseB);
-
+  if(PHASE == 3) xbar_connect(hardware[_pin_idx].xbarIO, channel[_encoder_ch].index);
+  if(PHASE == 4) xbar_connect(hardware[_pin_idx].xbarIO, channel[_encoder_ch].home);
+  if(PHASE == 5) xbar_connect(hardware[_pin_idx].xbarIO, channel[_encoder_ch].trigger);
 }
 
 void QuadEncoder::xbar_connect(unsigned int input, unsigned int output)
@@ -308,4 +303,133 @@ void QuadEncoder::xbar_connect(unsigned int input, unsigned int output)
   volatile uint8_t *xbar = (volatile uint8_t *)XBARA1_SEL0;
   xbar[output] = input;
 #endif
+}
+
+void QuadEncoder::enableInterrupts(const enc_config_t *config)
+{
+    uint32_t tmp16 = 0;
+	
+	//enable interrupt
+	NVIC_SET_PRIORITY(channel[_encoder_ch].interrupt, 32);
+	NVIC_ENABLE_IRQ(channel[_encoder_ch].interrupt);
+	attachInterruptVector(channel[_encoder_ch].interrupt, channel[_encoder_ch].isr);
+    /* ENC_CTRL. */
+    if (config->HOMETriggerMode != DISABLE)
+    {
+        tmp16 |= ENC_CTRL_HIE_MASK;
+    }
+    if (config->INDEXTriggerMode != DISABLE)
+    {
+        tmp16 |= ENC_CTRL_XIE_MASK;
+    }
+
+    if (config->positionMatchMode == ENABLE)
+    {
+        tmp16 |= ENC_CTRL_CMPIE_MASK;
+    }
+    if (tmp16 != 0)
+    {
+        channel[_encoder_ch].ENC->CTRL = (channel[_encoder_ch].ENC->CTRL & (uint16_t)(~ENC_CTRL_W1C_FLAGS)) | tmp16;
+    }
+}
+
+
+void QuadEncoder::disableInterrupts(uint32_t flag)
+{
+    uint16_t tmp16 = 0U;
+
+    /* ENC_CTRL. */
+    if (_HOMETransitionEnable == (_HOMETransitionEnable & flag))
+    {
+        tmp16 |= ENC_CTRL_HIE_MASK;
+    }
+    if (_INDEXPulseEnable == (_INDEXPulseEnable & flag))
+    {
+        tmp16 |= ENC_CTRL_XIE_MASK;
+    }
+    if (_positionCompareEnable == (_positionCompareEnable & flag))
+    {
+        tmp16 |= ENC_CTRL_CMPIE_MASK;
+    }
+    if (0U != tmp16)
+    {
+        channel[_encoder_ch].ENC->CTRL = (uint16_t)(channel[_encoder_ch].ENC->CTRL & (uint16_t)(~ENC_CTRL_W1C_FLAGS)) & (uint16_t)(~tmp16);
+    }
+
+}
+
+void QuadEncoder::clearStatusFlags(uint32_t flag)
+{
+    uint32_t tmp16 = 0U;
+
+    /* ENC_CTRL. */
+    if (_HOMETransitionFlag == (_HOMETransitionFlag & flag))
+    {
+        tmp16 |= ENC_CTRL_HIRQ_MASK;
+    }
+    if (_INDEXPulseFlag == (_INDEXPulseFlag & flag))
+    {
+        tmp16 |= ENC_CTRL_XIRQ_MASK;
+    }
+    if (_positionCompareFlag == (_positionCompareFlag & flag))
+    {
+        tmp16 |= ENC_CTRL_CMPIRQ_MASK;
+    }
+    if (0U != tmp16)
+    {
+        IMXRT_ENC2.CTRL = (IMXRT_ENC2.CTRL & (uint16_t)(~ENC_CTRL_W1C_FLAGS)) | tmp16;
+    }
+}
+
+inline void QuadEncoder::checkAndProcessInterrupt(uint8_t index) 
+{
+ 	list[index]->isr(index);
+}
+
+
+void QuadEncoder::isrEnc1()
+{
+	checkAndProcessInterrupt(1);
+	asm volatile ("dsb");  // wait for clear  memory barrier
+}
+
+void QuadEncoder::isrEnc2()
+{
+	checkAndProcessInterrupt(2);
+	asm volatile ("dsb");  // wait for clear  memory barrier
+
+}
+
+void QuadEncoder::isrEnc3()
+{
+	checkAndProcessInterrupt(3);
+	asm volatile ("dsb");  // wait for clear  memory barrier
+}
+void QuadEncoder::isrEnc4()
+{
+	checkAndProcessInterrupt(4);
+	asm volatile ("dsb");  // wait for clear  memory barrier
+}
+
+void QuadEncoder::isr(uint8_t index) 
+{
+    if (ENC_CTRL_XIRQ_MASK == (ENC_CTRL_XIRQ_MASK & channel[index].ENC->CTRL))
+    {
+		indexCounter++;
+		//Serial.println(indexCounter);Serial.flush();
+		clearStatusFlags(_INDEXPulseFlag);
+
+	}
+	
+    if (ENC_CTRL_HIRQ_MASK == (ENC_CTRL_HIRQ_MASK & channel[index].ENC->CTRL))
+    {
+		homeCounter++;
+		clearStatusFlags(_HOMETransitionFlag);
+    }
+	
+	if (ENC_CTRL_CMPIRQ_MASK == (ENC_CTRL_CMPIRQ_MASK & channel[index].ENC->CTRL))
+    {
+		compareValueFlag = 1;
+		clearStatusFlags(_positionCompareFlag);
+	}
 }

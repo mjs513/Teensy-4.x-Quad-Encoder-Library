@@ -13,14 +13,25 @@ QuadEncoder myEnc2(2, 2, 3, 0);  // Encoder on channel 2 of 4 available
 void setup()
 {
   while(!Serial && millis() < 4000);
-  delay(2000);
 
   /* Initialize the ENC module. */
   myEnc1.setInitConfig();  //
+  myEnc1.EncConfig.revolutionCountCondition = ENABLE;
+  myEnc1.EncConfig.enableModuloCountMode = ENABLE;
+  myEnc1.EncConfig.positionModulusValue = 20; 
+  // with above settings count rev every 20 ticks
+  // if myEnc1.EncConfig.revolutionCountCondition = ENABLE;
+  // is not defined or set to DISABLE, the position is zeroed every
+  // 20 counts, if enabled revolution counter is incremented when 
+  // phaseA ahead of phaseB, and decrements from 65535 when reversed.
   myEnc1.init();
   
   myEnc2.setInitConfig();  //
-  myEnc2.EncConfig.positionInitialValue =100;
+  myEnc2.EncConfig.positionInitialValue = 160;
+  myEnc2.EncConfig.positionMatchMode = ENABLE;
+  myEnc2.EncConfig.positionCompareValue = 200;
+  myEnc2.EncConfig.filterCount = 5;
+  myEnc2.EncConfig.filterSamplePeriod = 255;
   myEnc2.init();
 }
 
@@ -33,13 +44,24 @@ void loop(){
     /* Read the position values. */
     Serial.printf("Current position value1: %ld\r\n", mCurPosValue);
     Serial.printf("Position differential value1: %d\r\n", (int16_t)myEnc1.getHoldDifference());
-    Serial.printf("Position revolution value1: %d\r\n", myEnc1.getHoldRevolution());
+    Serial.printf("Position HOLD revolution value1: %d\r\n", myEnc1.getHoldRevolution());
     Serial.println();
   }
 
   old_position = mCurPosValue;
 
   mCurPosValue1 = myEnc2.getPosition();
+
+  if(myEnc2.compareValueFlag == 1) {
+    //myEnc2.init();
+    //resets counter to positionInitialValue so compare 
+    //will hit every 200
+    myEnc2.setPosition(myEnc2.EncConfig.positionInitialValue);
+    Serial.print("Compare Value Hit for Encoder 2:  ");
+    Serial.println(myEnc2.compareValueFlag);
+    Serial.println();
+    myEnc2.compareValueFlag = 0;
+  }
 
   if(mCurPosValue1 != old_position1){
     /* Read the position values. */
