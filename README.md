@@ -12,6 +12,8 @@ QuadEncoder myEnc1(1, 0, 1, 0);  // Encoder on channel 1 of 4 available
 QuadEncoder myEnc2(2, 2, 3, 0);  // Encoder on channel 2 of 4 available
                                  //Phase A (pin2), PhaseB(pin3), Pullups Req(0)
 ```
+The full constructor allows for the INDEX, HOME and TRIGGER pins if available:
+```	QuadEncoder(uint8_t encoder_ch = 255, uint8_t PhaseA_pin = 255, uint8_t PhaseB_pin = 255, uint8_t pin_pus = 0, uint8_t index_pin = 255, uint8_t home_pin = 255, uint8_t trigger_pin = 255);```
 
 In setup the encoder is initialized as:
 ```
@@ -72,3 +74,7 @@ uint32_t positionModulusValue;
 //Position initial value. The available value is a 32-bit number. */
 uint32_t positionInitialValue; 
     ```
+A couple of things to note when using the INDEX or the HOME triggers:
+1. If one of the two trigger pins are used while ```INDEXTriggerMode``` is ```DISABLED``` in the configuration structure the position counts will continue to increment while the "Position HOLD revolution value" will increment when the ```index``` pulse is seen on the pin.
+2. If ```INDEXTriggerMode``` is set to ```RISING_EDGE``` or ```FALLING_EDGE`` the associated interrupt will fire and increment the ```indexCounter``` but the position counts will be reset to zero.
+3. This applies to the HOME trigger as well.
