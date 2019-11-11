@@ -47,6 +47,10 @@ bool decoderWorkMode; // 0 = Normal mode, 1 = PHASEA input generates a count sig
 /* Signal detection. */
 uint8_t HOMETriggerMode;   //0 - disable, 1 - rising, 2 - falling
 uint8_t INDEXTriggerMode; //0 - disabled, 1 - Use positive going edge-to-trigger initialization of position counters!, 2 - use falling
+
+bool IndexTrigger;   //0 - disable index counting, 1 - enable index counting
+bool HomeTrigger;    
+
 bool clearCounter;  
 bool clearHoldCounter; 
 
@@ -77,8 +81,12 @@ uint32_t positionModulusValue;
 uint32_t positionInitialValue; 
    ```
    
-A couple of things to note when using the INDEX or the HOME triggers:
+A couple of things to note when using the INDEX or the HOME triggers are used:
 
 1. If one of the two trigger pins are used while ```INDEXTriggerMode``` is ```DISABLED``` in the configuration structure the position counts will continue to increment while the "Position HOLD revolution value" will increment when the ```index``` pulse is seen on the pin.
 2. If ```INDEXTriggerMode``` is set to ```RISING_EDGE``` or ```FALLING_EDGE`` the associated interrupt will fire and increment the ```indexCounter``` but the position counts will be reset to zero.
 3. This applies to the HOME trigger as well.
+4. If indexTrigger = ENABLE and INDEXTriggerMode = DISABLE (default).  The encoder count will continue increase with no reset while the indexCounter with increment when trigger by the index signal (needs to be negative trigger) and the Position HOLD revolution value will increment or decrement depending on direction.
+5. If indexTrigger = ENABLE and INDEXTriggerMode = ENABLE.  The encoder count will continue reset and the indexCounter with increment when trigger by the index signal (needs to be negative trigger) and the Position HOLD revolution value will increment or decrement depending on direction.
+6. If indexTrigger = DISABLE (default) and INDEXTriggerMode = ENABLE. The encoder count will continue reset and the indexCounter will not increment with index signal (needs to be negative trigger) and the Position HOLD revolution value will increment or decrement depending on direction.
+7. items 4, 5, and 6 apply for the home trigger signal (needs to be positive) as well
