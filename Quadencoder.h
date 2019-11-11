@@ -34,9 +34,8 @@
 #define ENC_CTRL2_UPDHLD_MASK                    (0x1U)
 #define ENC_CTRL2_UPDPOS_MASK                    (0x2U)
 //interrupts
-#define ENC_CTRL2_SABIRQ_MASK                    (0x800U)
-#define ENC_CTRL2_ROIRQ_MASK                     (0x80U)
-#define ENC_CTRL2_RUIRQ_MASK                     (0x20U)
+//#define ENC_CTRL2_ROIE_MASK                     (0x80U)
+//#define ENC_CTRL2_RUIE_MASK                     (0x20U)
 
 
 #define ENC_CTRL_W1C_FLAGS (ENC_CTRL_HIRQ_MASK | ENC_CTRL_XIRQ_MASK | ENC_CTRL_DIRQ_MASK | ENC_CTRL_CMPIRQ_MASK)
@@ -134,8 +133,11 @@ public:
 		uint32_t positionInitialValue; 
 		
 		//Position Roll Over or Roll Under Interrupt Enable
-		uint8_t positionROIE = DISABLE;
-		uint8_t positionRUIE = DISABLE;
+		uint8_t positionROIE;
+		uint8_t positionRUIE;
+		
+		bool IndexTrigger;
+		bool HomeTrigger;
 	} enc_config_t;
 	
 	//encoder
@@ -184,6 +186,7 @@ public:
 	uint16_t getHoldDifference();
 	uint16_t getRevolution();
 	uint16_t getHoldRevolution();
+	void printConfig(enc_config_t *config);
 	
 	//xbara1 configuration
 	void enc_xbara_mapping(uint8_t pin, uint8_t PHASE, uint8_t PUS);

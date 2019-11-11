@@ -66,6 +66,9 @@ QuadEncoder::QuadEncoder(uint8_t encoder_ch, uint8_t PhaseA_pin, uint8_t PhaseB_
 	} else {
 	  Serial.println("No Encoder Channel Selected!");
 	}
+	
+	disableInterrupts(_positionROEnable);
+	disableInterrupts(_positionRUEnable);
 }
 
 void QuadEncoder::getConfig1(enc_config_t *config)
@@ -77,18 +80,45 @@ void QuadEncoder::getConfig1(enc_config_t *config)
     config->decoderWorkMode = DISABLE;
     config->HOMETriggerMode = DISABLE;
     config->INDEXTriggerMode = DISABLE;
+	config->IndexTrigger = DISABLE;
+	config->HomeTrigger = DISABLE;
     config->clearCounter = DISABLE;
     config->clearHoldCounter = DISABLE;
     config->filterCount = 0;
     config->filterSamplePeriod = 0;
     config->positionMatchMode = DISABLE;
-    config->positionCompareValue = 0;
+    config->positionCompareValue = 0xffffffff;
     config->revolutionCountCondition = DISABLE;
     config->enableModuloCountMode = DISABLE;
     config->positionModulusValue = 0;
     config->positionInitialValue = 0;
 	config->positionROIE = DISABLE;
 	config->positionRUIE = DISABLE;
+	
+}
+
+void QuadEncoder::printConfig(enc_config_t *config)
+{
+	Serial.printf("\tenableReverseDirection: %d\n",config->enableReverseDirection);
+	Serial.printf("\tdecoderWorkMode: %d\n",config->decoderWorkMode);
+	Serial.printf("\tHOMETriggerMode: %d\n",config->HOMETriggerMode);
+	Serial.printf("\tINDEXTriggerMode: %d\n",config->INDEXTriggerMode);
+	Serial.printf("\tIndexTrigger: %d\n",config->IndexTrigger);
+	Serial.printf("\tHomeTrigger: %d\n",config->HomeTrigger);	
+	
+	Serial.printf("\tclearCounter: %d\n",config->clearCounter);
+	Serial.printf("\tclearHoldCounter: %d\n",config->clearHoldCounter);
+	
+	Serial.printf("\tfilterCount: %d\n",config->filterCount);
+	Serial.printf("\tfilterSamplePeriod: %d\n",config->filterSamplePeriod);
+	Serial.printf("\tpositionCompareValue: %x\n",config->positionCompareValue);
+	Serial.printf("\trevolutionCountCondition: %d\n",config->clearCounter);
+	Serial.printf("\tenableModuloCountMode: %d\n",config->clearHoldCounter);
+	
+	Serial.printf("\tpositionInitialValue: %d\n",config->positionInitialValue);
+	Serial.printf("\tpositionROIE: %d\n",config->positionROIE);
+	Serial.printf("\tpositionRUIE: %x\n",config->positionRUIE);
+	Serial.printf("\n");
 }
 
 void QuadEncoder::setConfigInitialPosition()
@@ -110,7 +140,7 @@ void QuadEncoder::Init(const enc_config_t *config)
     tmp16 = channel[_encoder_ch].ENC->CTRL & (uint16_t)(~(ENC_CTRL_W1C_FLAGS | ENC_CTRL_HIP_MASK | ENC_CTRL_HNE_MASK | ENC_CTRL_REV_MASK | ENC_CTRL_PH1_MASK | ENC_CTRL_XIP_MASK | ENC_CTRL_XNE_MASK | ENC_CTRL_WDE_MASK));
 	
     /* For HOME trigger. */
-    if (DISABLE != config->HOMETriggerMode)
+    if (config->HOMETriggerMode != DISABLE)
     {
         tmp16 |= ENC_CTRL_HIP_MASK;
         if (FALLING_EDGE == config->HOMETriggerMode)
@@ -139,12 +169,12 @@ void QuadEncoder::Init(const enc_config_t *config)
     }
 
     channel[_encoder_ch].ENC->CTRL = tmp16;
-
+	
     /* ENC_FILT. */
     channel[_encoder_ch].ENC->FILT = ENC_FILT_FILT_CNT(config->filterCount) | ENC_FILT_FILT_PER(config->filterSamplePeriod);
 
     /* ENC_CTRL2. */
-    tmp16 = channel[_encoder_ch].ENC->CTRL2 & (uint16_t)(~(ENC_CTRL2_W1C_FLAGS | ENC_CTRL2_OUTCTL_MASK | ENC_CTRL2_REVMOD_MASK | ENC_CTRL2_MOD_MASK | ENC_CTRL2_UPDPOS_MASK | ENC_CTRL2_UPDHLD_MASK));
+    tmp16 = channel[_encoder_ch].ENC->CTRL2 & (uint16_t)(~(ENC_CTRL2_W1C_FLAGS | ENC_CTRL2_OUTCTL_MASK | ENC_CTRL2_REVMOD_MASK | ENC_CTRL2_MOD_MASK | ENC_CTRL2_UPDPOS_MASK | ENC_CTRL2_UPDHLD_MASK | ENC_CTRL2_ROIRQ_MASK | ENC_CTRL2_RUIRQ_MASK));
 	
     if (1 == config->positionMatchMode)
     {
@@ -178,6 +208,7 @@ void QuadEncoder::Init(const enc_config_t *config)
     /* ENC_UINIT & ENC_LINIT. */
     channel[_encoder_ch].ENC->UINIT = (uint16_t)(config->positionInitialValue >> 16U); /* Upper 16 bits. */
     channel[_encoder_ch].ENC->LINIT = (uint16_t)(config->positionInitialValue);        /* Lower 16 bits. */
+	
 }
 
 uint32_t QuadEncoder::getPosition()
@@ -313,12 +344,13 @@ void QuadEncoder::enableInterrupts(const enc_config_t *config)
 	NVIC_SET_PRIORITY(channel[_encoder_ch].interrupt, 32);
 	NVIC_ENABLE_IRQ(channel[_encoder_ch].interrupt);
 	attachInterruptVector(channel[_encoder_ch].interrupt, channel[_encoder_ch].isr);
+	
     /* ENC_CTRL. */
-    if (config->HOMETriggerMode != DISABLE)
+    if (config->HomeTrigger != DISABLE)
     {
         tmp16 |= ENC_CTRL_HIE_MASK;
     }
-    if (config->INDEXTriggerMode != DISABLE)
+    if (config->IndexTrigger != DISABLE)
     {
         tmp16 |= ENC_CTRL_XIE_MASK;
     }
@@ -331,6 +363,21 @@ void QuadEncoder::enableInterrupts(const enc_config_t *config)
     {
         channel[_encoder_ch].ENC->CTRL = (channel[_encoder_ch].ENC->CTRL & (uint16_t)(~ENC_CTRL_W1C_FLAGS)) | tmp16;
     }
+	/* ENC_CTRL2. */
+    tmp16 = 0U;
+    if (config->positionROIE != DISABLE)
+    {
+        tmp16 |= ENC_CTRL2_ROIRQ_MASK;
+    }
+    if (config->positionRUIE != DISABLE)
+    {
+        tmp16 |= ENC_CTRL2_RUIRQ_MASK;
+    }
+    if (tmp16 != 0U)
+    {
+        channel[_encoder_ch].ENC->CTRL2 = (uint16_t)(channel[_encoder_ch].ENC->CTRL2 & (uint16_t)(~ENC_CTRL2_W1C_FLAGS)) & (uint16_t)(~tmp16);
+    }
+	
 }
 
 
@@ -355,8 +402,22 @@ void QuadEncoder::disableInterrupts(uint32_t flag)
     {
         channel[_encoder_ch].ENC->CTRL = (uint16_t)(channel[_encoder_ch].ENC->CTRL & (uint16_t)(~ENC_CTRL_W1C_FLAGS)) & (uint16_t)(~tmp16);
     }
-
+    /* ENC_CTRL2. */
+    tmp16 = 0U;
+    if (_positionRollOverFlag == (_positionRollOverFlag & flag))
+    {
+        tmp16 |= ENC_CTRL2_ROIRQ_MASK;
+    }
+    if (_positionRollUnderFlag == (_positionRollUnderFlag & flag))
+    {
+        tmp16 |= ENC_CTRL2_RUIRQ_MASK;
+    }
+    if (tmp16 != 0U)
+    {
+        channel[_encoder_ch].ENC->CTRL2 = (uint16_t)(channel[_encoder_ch].ENC->CTRL2 & (uint16_t)(~ENC_CTRL2_W1C_FLAGS)) & (uint16_t)(~tmp16);
+    }
 }
+
 
 void QuadEncoder::clearStatusFlags(uint32_t flag, uint8_t index)
 {
@@ -378,6 +439,20 @@ void QuadEncoder::clearStatusFlags(uint32_t flag, uint8_t index)
     if (0U != tmp16)
     {
         channel[index].ENC->CTRL = (channel[index].ENC->CTRL & (uint16_t)(~ENC_CTRL_W1C_FLAGS)) | tmp16;
+    }
+    /* ENC_CTRL2. */
+    tmp16 = 0U;
+    if (_positionRollOverFlag == (_positionRollOverFlag & flag))
+    {
+        tmp16 |= ENC_CTRL2_ROIRQ_MASK;
+    }
+    if (_positionRollUnderFlag == (_positionRollUnderFlag & flag))
+    {
+        tmp16 |= ENC_CTRL2_RUIRQ_MASK;
+    }
+    if (0U != tmp16)
+    {
+        channel[index].ENC->CTRL2 = (channel[index].ENC->CTRL2 & (uint16_t)(~ENC_CTRL2_W1C_FLAGS)) | tmp16;
     }
 }
 
@@ -412,16 +487,32 @@ void QuadEncoder::isrEnc4()
 }
 
 void QuadEncoder::isr(uint8_t index) 
-{
-    if (ENC_CTRL_XIRQ_MASK == (ENC_CTRL_XIRQ_MASK & channel[index].ENC->CTRL))
+{	
+    if (ENC_CTRL_XIRQ_MASK == (ENC_CTRL_XIRQ_MASK & channel[index].ENC->CTRL) && (ENC_CTRL_XIE_MASK & channel[index].ENC->CTRL))
     {
 		indexCounter = indexCounter + 1;
 		clearStatusFlags(_INDEXPulseFlag, index);
+		
+		if(ENC_CTRL2_ROIRQ_MASK == (ENC_CTRL2_ROIRQ_MASK & channel[index].ENC->CTRL2))
+		{
+			//Serial.println("ROLL OVER INDICATED!!!!!");
+			//Serial.println("=========================");
+			//Serial.println();
+			clearStatusFlags(_positionRollOverFlag, index);
+		}
+		if(ENC_CTRL2_RUIRQ_MASK == (ENC_CTRL2_RUIRQ_MASK & channel[index].ENC->CTRL2))
+		{
+			//Serial.println("ROLL UNDER INDICATED!!!!!");
+			//Serial.println("=========================");
+			//Serial.println();
+			clearStatusFlags(_positionRollUnderFlag, index);
+		}
 
 	}
 	
-    if (ENC_CTRL_HIRQ_MASK == (ENC_CTRL_HIRQ_MASK & channel[index].ENC->CTRL))
+    if (ENC_CTRL_HIRQ_MASK == (ENC_CTRL_HIRQ_MASK & channel[index].ENC->CTRL) && (ENC_CTRL_HIE_MASK & channel[index].ENC->CTRL))
     {
+
 		homeCounter++;
 		clearStatusFlags(_HOMETransitionFlag, index);
     }
