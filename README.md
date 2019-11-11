@@ -6,22 +6,24 @@ Library based on NXP Quad Encoder SDK driver for the Encoder module but modified
 There are 4 hardware quadrature encoder channels available the Teensy 4.0.  These are supported on pins: 0, 1, 2, 3, 4, 5, 7, 30, 31 and 33.
 
 The constuctor is designed to tell the library what encoder channel, PhaseA and PhaseB pins to use as well as whether to use pullups on those pins.  Example:
-``` 
+```c++
 QuadEncoder myEnc1(1, 0, 1, 0);  // Encoder on channel 1 of 4 available
                                  // Phase A (pin0), PhaseB(pin1), Pullups Req(0)
 QuadEncoder myEnc2(2, 2, 3, 0);  // Encoder on channel 2 of 4 available
                                  //Phase A (pin2), PhaseB(pin3), Pullups Req(0)
 ```
 The full constructor allows for the INDEX, HOME and TRIGGER pins if available:
-```	QuadEncoder(uint8_t encoder_ch = 255, uint8_t PhaseA_pin = 255, uint8_t PhaseB_pin = 255, uint8_t pin_pus = 0, uint8_t index_pin = 255, uint8_t home_pin = 255, uint8_t trigger_pin = 255);```
+```c++
+QuadEncoder(uint8_t encoder_ch = 255, uint8_t PhaseA_pin = 255, uint8_t PhaseB_pin = 255, uint8_t pin_pus = 0, uint8_t index_pin = 255, uint8_t home_pin = 255, uint8_t trigger_pin = 255);
+```
 
 In setup the encoder is initialized as:
-```
+```c++
   myEnc1.setInitConfig();  //Loads default configuration for the encoder channel
   myEnc1.init();           //Initializers the encoder for the channel selected
  ```
 To access counts in loop:
-``` 
+```c++ 
     mCurPosValue = myEnc1.getPosition();
     Serial.printf("Current position value1: %ld\r\n", mCurPosValue);
     Serial.printf("Position differential value1: %d\r\n", (int16_t)myEnc1.getHoldDifference());
@@ -29,7 +31,7 @@ To access counts in loop:
 all you have to call is ```getPosition()``` while ```myEnc1.getHoldDifference()``` shows direction.
 
 Another example is the ability to change initial parameters once they are loaded:
-```
+```c++
   myEnc2.setInitConfig();  //
   myEnc2.EncConfig.positionInitialValue =100;
   myEnc2.init();
@@ -37,7 +39,7 @@ Another example is the ability to change initial parameters once they are loaded
 In this case ```myEnc2.EncConfig.positionInitialValue``` changes the starting value for the position counts.
 
 Current available parameters:
-```
+```c++
 /* Basic counter. */
 bool enableReverseDirection;
 bool decoderWorkMode; // 0 = Normal mode, 1 = PHASEA input generates a count signal while PHASEB input control the direction. 
@@ -45,6 +47,10 @@ bool decoderWorkMode; // 0 = Normal mode, 1 = PHASEA input generates a count sig
 /* Signal detection. */
 uint8_t HOMETriggerMode;   //0 - disable, 1 - rising, 2 - falling
 uint8_t INDEXTriggerMode; //0 - disabled, 1 - Use positive going edge-to-trigger initialization of position counters!, 2 - use falling
+
+bool IndexTrigger;   //0 - disable index counting, 1 - enable index counting
+bool HomeTrigger;    
+
 bool clearCounter;  
 bool clearHoldCounter; 
 
@@ -73,8 +79,14 @@ uint32_t positionModulusValue;
 		
 //Position initial value. The available value is a 32-bit number. */
 uint32_t positionInitialValue; 
-    ```
-A couple of things to note when using the INDEX or the HOME triggers:
+   ```
+   
+A couple of things to note when using the INDEX or the HOME triggers are used:
+
 1. If one of the two trigger pins are used while ```INDEXTriggerMode``` is ```DISABLED``` in the configuration structure the position counts will continue to increment while the "Position HOLD revolution value" will increment when the ```index``` pulse is seen on the pin.
 2. If ```INDEXTriggerMode``` is set to ```RISING_EDGE``` or ```FALLING_EDGE`` the associated interrupt will fire and increment the ```indexCounter``` but the position counts will be reset to zero.
 3. This applies to the HOME trigger as well.
+4. If indexTrigger = ENABLE and INDEXTriggerMode = DISABLE (default).  The encoder count will continue increase with no reset while the indexCounter with increment when trigger by the index signal (needs to be negative trigger) and the Position HOLD revolution value will increment or decrement depending on direction.
+5. If indexTrigger = ENABLE and INDEXTriggerMode = ENABLE.  The encoder count will continue reset and the indexCounter with increment when trigger by the index signal (needs to be negative trigger) and the Position HOLD revolution value will increment or decrement depending on direction.
+6. If indexTrigger = DISABLE (default) and INDEXTriggerMode = ENABLE. The encoder count will continue reset and the indexCounter will not increment with index signal (needs to be negative trigger) and the Position HOLD revolution value will increment or decrement depending on direction.
+7. items 4, 5, and 6 apply for the home trigger signal (needs to be positive) as well
