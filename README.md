@@ -1,6 +1,4 @@
-# Teensy-4.x-Quad-Encoder-Library
-Hardware Quadrature Library for the Teensy 4.x
-
+# Hardware Quadrature Library for the Teensy 4.x
 Library based on NXP Quad Encoder SDK driver for the Encoder module but modified to support the Teensy 4.x infrastructure.
 
 There are 4 hardware quadrature encoder channels available the Teensy 4.0.  These are supported on pins: 0, 1, 2, 3, 4, 5, 7, 30, 31 and 33.
@@ -90,3 +88,79 @@ A couple of things to note when using the INDEX or the HOME triggers are used:
 5. If indexTrigger = ENABLE and INDEXTriggerMode = ENABLE.  The encoder count will continue reset and the indexCounter with increment when trigger by the index signal (needs to be negative trigger) and the Position HOLD revolution value will increment or decrement depending on direction.
 6. If indexTrigger = DISABLE (default) and INDEXTriggerMode = ENABLE. The encoder count will continue reset and the indexCounter will not increment with index signal (needs to be negative trigger) and the Position HOLD revolution value will increment or decrement depending on direction.
 7. items 4, 5, and 6 apply for the home trigger signal (needs to be positive) as well
+
+## Basic Usuage for the Teensy 4.x
+Basic usuage for the T4 is similar to the current Teensy Encoder library.
+
+```Encoder myEnc(enc, pin1, pin2); 
+   enc - encoder object (specify 1, 2, 3 or 4).
+   pin1 - phase A
+   pin2 - phase b
+myEnc.read();
+   Returns the accumulated position. This number can be positive or negative. 
+myEnc.write(newPosition);
+   Set the accumulated position to a new number. 
+ ```
+## Example Program 
+(similar to example on https://www.pjrc.com/teensy/td_libs_Encoder.html. See SimpleEncoder.ino in the examples folder.
+ ```/* Teensy 4 H/S Encoder Library - TwoKnobs Example
+ * http://www.pjrc.com/teensy/td_libs_Encoder.html
+ *
+ * This example code is in the public domain.
+ */
+
+ #include "Quadencoder.h"
+
+// Change these pin numbers to the pins connected to your encoder.
+// Allowable encoder pins:
+// 0, 1, 2, 3, 4, 5, 7, 30, 31 and 33
+// Encoder on channel 1 of 4 available
+// Phase A (pin0), PhaseB(pin1), 
+QuadEncoder knobLeft(1, 0, 1);
+// Encoder on channel 2 of 4 available
+//Phase A (pin2), PhaseB(pin3), Pullups Req(0)
+QuadEncoder knobRight(2, 2, 3);
+//   avoid using pins with LEDs attached
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("TwoKnobs Encoder Test:");
+  /* Initialize Encoder/knobLeft. */
+  knobLeft.setInitConfig();
+  //Optional filter setup
+  //knobLeft.EncConfig.filterCount = 5;
+  //knobLeft.EncConfig.filterSamplePeriod = 255;
+  knobLeft.init();
+  /* Initialize Encoder/knobRight. */
+  knobRight.setInitConfig();
+  //knobRight.EncConfig.filterCount = 5;
+  //knobRight.EncConfig.filterSamplePeriod = 255;
+  knobRight.init();
+}
+
+long positionLeft  = -999;
+long positionRight = -999;
+
+void loop() {
+  long newLeft, newRight;
+  newLeft = knobLeft.read();
+  newRight = knobRight.read();
+  if (newLeft != positionLeft || newRight != positionRight) {
+    Serial.print("Left = ");
+    Serial.print(newLeft);
+    Serial.print(", Right = ");
+    Serial.print(newRight);
+    Serial.println();
+    positionLeft = newLeft;
+    positionRight = newRight;
+  }
+  // if a character is sent from the serial monitor,
+  // reset both back to zero.
+  if (Serial.available()) {
+    Serial.read();
+    Serial.println("Reset both knobs to zero");
+    knobLeft.write(0);
+    knobRight.write(0);
+  }
+}
+```
