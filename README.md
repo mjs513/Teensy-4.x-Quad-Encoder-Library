@@ -92,7 +92,8 @@ A couple of things to note when using the INDEX or the HOME triggers are used:
 ## Basic Usuage for the Teensy 4.x
 Basic usuage for the T4 is similar to the current Teensy Encoder library.
 
-```Encoder myEnc(enc, pin1, pin2); 
+```
+Encoder myEnc(enc, pin1, pin2); 
    enc - encoder object (specify 1, 2, 3 or 4).
    pin1 - phase A
    pin2 - phase b
