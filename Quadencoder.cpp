@@ -211,7 +211,7 @@ void QuadEncoder::Init(const enc_config_t *config)
 	
 }
 
-uint32_t QuadEncoder::getPosition()
+uint32_t QuadEncoder::read()
 {
     uint32_t ret32;
 
@@ -222,7 +222,7 @@ uint32_t QuadEncoder::getPosition()
     return ret32;
 }
 
-void QuadEncoder::setPosition(uint32_t value)
+void QuadEncoder::write(uint32_t value)
 {
     channel[_encoder_ch].ENC->UINIT = (uint16_t)(value >> 16U); /* Set upper 16 bits. */
     channel[_encoder_ch].ENC->LINIT = (uint16_t)(value);        /* Set lower 16 bits. */

@@ -23,7 +23,7 @@ void setup()
 void loop(){
   
   /* This read operation would capture all the position counter to responding hold registers. */
-  mCurPosValue = myEnc1.getPosition();
+  mCurPosValue = myEnc1.read();
 
   if(mCurPosValue != old_position){
     /* Read the position values. */

@@ -179,8 +179,8 @@ public:
 	void setInitConfig();
 	void init();
 	void Init(const enc_config_t *config);
-	uint32_t getPosition();
-	void setPosition(uint32_t value);
+	uint32_t read();
+	void write(uint32_t value);
 	uint32_t getHoldPosition();
 	uint16_t getPositionDifference();
 	uint16_t getHoldDifference();

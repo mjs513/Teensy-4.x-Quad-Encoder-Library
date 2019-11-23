@@ -24,7 +24,7 @@ In setup the encoder is initialized as:
  ```
 To access counts in loop:
 ```c++ 
-    mCurPosValue = myEnc1.getPosition();
+    mCurPosValue = myEnc1.read();
     Serial.printf("Current position value1: %ld\r\n", mCurPosValue);
     Serial.printf("Position differential value1: %d\r\n", (int16_t)myEnc1.getHoldDifference());
 ``` 

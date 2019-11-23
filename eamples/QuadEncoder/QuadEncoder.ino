@@ -38,7 +38,7 @@ void setup()
 void loop(){
   
   /* This read operation would capture all the position counter to responding hold registers. */
-  mCurPosValue = myEnc1.getPosition();
+  mCurPosValue = myEnc1.read();
 
   if(mCurPosValue != old_position){
     /* Read the position values. */
@@ -50,7 +50,7 @@ void loop(){
 
   old_position = mCurPosValue;
 
-  mCurPosValue1 = myEnc2.getPosition();
+  mCurPosValue1 = myEnc2.read();
 
   if(myEnc2.compareValueFlag == 1) {
     //myEnc2.init();
