@@ -211,7 +211,7 @@ void QuadEncoder::Init(const enc_config_t *config)
 	
 }
 
-uint32_t QuadEncoder::read()
+int32_t QuadEncoder::read()
 {
     uint32_t ret32;
 
@@ -219,7 +219,7 @@ uint32_t QuadEncoder::read()
     ret32 <<= 16U;
     ret32 |= channel[_encoder_ch].ENC->LPOSH; /* Get lower 16 bits from hold register. */
 
-    return ret32;
+    return (int32_t) ret32;
 }
 
 void QuadEncoder::write(uint32_t value)
