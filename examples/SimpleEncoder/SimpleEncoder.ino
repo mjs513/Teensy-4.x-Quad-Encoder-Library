@@ -4,7 +4,7 @@
  * This example code is in the public domain.
  */
 
-#include "Quadencoder.h"
+#include "QuadEncoder.h"
 
 // Change these pin numbers to the pins connected to your encoder.
 // Allowable encoder pins:
