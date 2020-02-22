@@ -14,14 +14,28 @@ const uint8_t QuadEncoder::_channel_count =  (sizeof(QuadEncoder::channel)/sizeo
 
 //xbara1 pin config
 //pin, idx, *reg, alt
+#ifdef ARDUINO_TEENSY40
 const  QuadEncoder::ENC_Hardware_t QuadEncoder::hardware[] = {	
 	{0, 0, &CORE_XIO_PIN0, 1, 17, 1},	{1, 1, &CORE_XIO_PIN1, 1, 16, 0},
 	{2, 2, &CORE_XIO_PIN2, 3, 6, 0},	{3, 3, &CORE_XIO_PIN3, 3, 7, 0},
 	{4, 4, &CORE_XIO_PIN4,3, 8, 0},		{5, 5, &CORE_XIO_PIN5, 3, 17, 0},
-	{7, 6, &CORE_XIO_PIN7, 1, 15, 1},	{8, 7, &CORE_XIO_PIN8, 1, 14, 1},
-	{9, 30, &CORE_XIO_PIN30, 1, 22, 0},	{10, 31, &CORE_XIO_PIN31, 1, 23, 0},
+	{7, 7, &CORE_XIO_PIN7, 1, 15, 1},	{8, 8, &CORE_XIO_PIN8, 1, 14, 1},
+	{9, 30, &CORE_XIO_PIN30, 1, 23, 0},	{10, 31, &CORE_XIO_PIN31, 1, 22, 0},
 	{11, 33, &CORE_XIO_PIN33, 3, 9, 0}
 };
+#endif
+#ifdef ARDUINO_TEENSY41
+const  QuadEncoder::ENC_Hardware_t QuadEncoder::hardware[] = {	
+	{0, 0, &CORE_XIO_PIN0, 1, 17, 1},	{1, 1, &CORE_XIO_PIN1, 1, 16, 0},
+	{2, 2, &CORE_XIO_PIN2, 3, 6, 0},	{3, 3, &CORE_XIO_PIN3, 3, 7, 0},
+	{4, 4, &CORE_XIO_PIN4,3, 8, 0},		{5, 5, &CORE_XIO_PIN5, 3, 17, 0},
+	{7, 7, &CORE_XIO_PIN7, 1, 15, 1},	{8, 8, &CORE_XIO_PIN8, 1, 14, 1},
+	{9, 30, &CORE_XIO_PIN30, 1, 23, 0},	{10, 31, &CORE_XIO_PIN31, 1, 22, 0},
+	{11, 33, &CORE_XIO_PIN33, 3, 9, 0},	{12, 36, &CORE_XIO_PIN36, 1, 16, 1},
+	{13, 37, &CORE_XIO_PIN37, 1, 17, 3}
+
+};
+#endif
 const uint8_t QuadEncoder::_hardware_count =  (sizeof(QuadEncoder::hardware)/sizeof(QuadEncoder::hardware[0]));
 
 QuadEncoder * QuadEncoder::list[5];
