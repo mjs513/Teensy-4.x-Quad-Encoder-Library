@@ -1,4 +1,4 @@
-#include "Quadencoder.h"
+#include "QuadEncoder.h"
 
 
 uint32_t mCurPosValue;

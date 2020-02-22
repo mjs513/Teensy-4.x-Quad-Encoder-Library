@@ -89,8 +89,8 @@ A couple of things to note when using the INDEX or the HOME triggers are used:
 6. If indexTrigger = DISABLE (default) and INDEXTriggerMode = ENABLE. The encoder count will continue reset and the indexCounter will not increment with index signal (needs to be negative trigger) and the Position HOLD revolution value will increment or decrement depending on direction.
 7. items 4, 5, and 6 apply for the home trigger signal (needs to be positive) as well
 
-## Basic Usuage for the Teensy 4.x
-Basic usuage for the T4 is similar to the current Teensy Encoder library.
+## Basic Usage for the Teensy 4.x
+Basic usage for the T4 is similar to the current Teensy Encoder library.
 
 ```
 Encoder myEnc(enc, pin1, pin2); 
