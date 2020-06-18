@@ -1,7 +1,7 @@
 # Hardware Quadrature Library for the Teensy 4.x
 Library based on NXP Quad Encoder SDK driver for the Encoder module but modified to support the Teensy 4.x infrastructure.
 
-There are 4 hardware quadrature encoder channels available the Teensy 4.x.  The Teensy 4.0 Encoders are supported on pins: 0, 1, 2, 3, 4, 5, 7, 30, 31 and 33.  The Teensy 4.1 add pins 36 and 37.
+There are 4 hardware quadrature encoder channels available the Teensy 4.x.  The Teensy 4.x Encoders are supported on pins: 0, 1, 2, 3, 4, 5, 7, 30, 31 and 33. Pins 0 and 5 share the same internal crossbar connections and are as such exclusive...pick one or the other.
 
 The constuctor is designed to tell the library what encoder channel, PhaseA and PhaseB pins to use as well as whether to use pullups on those pins.  Example:
 ```c++
