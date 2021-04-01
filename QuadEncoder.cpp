@@ -13,8 +13,8 @@ const QuadEncoder::ENC_Channel_t QuadEncoder::channel[] = {
 const uint8_t QuadEncoder::_channel_count =  (sizeof(QuadEncoder::channel)/sizeof(QuadEncoder::channel[0]));
 
 //xbara1 pin config
-//pin, idx, *reg, alt
-#ifdef ARDUINO_TEENSY40
+// idx, pin, *reg, alt
+#if defined( ARDUINO_TEENSY40 ) || defined( ARDUINO_TEENSY_MICROMOD)
 const  QuadEncoder::ENC_Hardware_t QuadEncoder::hardware[] = {	
 	{0, 0, &CORE_XIO_PIN0, 1, 17, 1},	{1, 1, &CORE_XIO_PIN1, 1, 16, 0},
 	{2, 2, &CORE_XIO_PIN2, 3, 6, 0},	{3, 3, &CORE_XIO_PIN3, 3, 7, 0},
