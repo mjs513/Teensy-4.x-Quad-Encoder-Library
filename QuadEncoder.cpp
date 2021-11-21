@@ -46,7 +46,7 @@ const  QuadEncoder::ENC_Hardware_t QuadEncoder::hardware[] = {
 	{8, 30, &CORE_XIO_PIN30, 1, 23, 0},	{9, 31, &CORE_XIO_PIN31, 1, 22, 0},
 	{10, 33, &CORE_XIO_PIN33, 3, 9, 0},	{11, 36, &CORE_XIO_PIN36, 3, 5, 0},
 	{12, 37, &CORE_XIO_PIN37, 3, 4, 0}
-	// TODO: set the values for PIN35 and PIN37 correctly
+	// TODO: set the values for PIN36 and PIN37 correctly
 
 };
 #endif
