@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "QuadEncoder.h"
 
-#define DEBUG_OUTPUT
+//#define DEBUG_OUTPUT
 
 const QuadEncoder::ENC_Channel_t QuadEncoder::channel[] = {	
 	{0,&IMXRT_ENC1, IRQ_ENC1, isrEnc1, 66, 67, 68, 69, 70,&CCM_CCGR4,CCM_CCGR4_ENC1(CCM_CCGR_ON)},  //this is a dummy entry - use 1-4 for channels
@@ -14,7 +14,6 @@ const uint8_t QuadEncoder::_channel_count =  (sizeof(QuadEncoder::channel)/sizeo
 
 //xbara1 pin config
 // idx, pin, *reg, alt
-//#if defined( ARDUINO_TEENSY40 ) || defined( ARDUINO_TEENSY_MICROMOD)
 #if defined( ARDUINO_TEENSY40)
 const  QuadEncoder::ENC_Hardware_t QuadEncoder::hardware[] = {	
 	{0, 0, &CORE_XIO_PIN0, 1, 17, 1},	{1, 1, &CORE_XIO_PIN1, 1, 16, 0},
