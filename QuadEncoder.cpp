@@ -24,7 +24,7 @@ const  QuadEncoder::ENC_Hardware_t QuadEncoder::hardware[] = {
 	{10, 33, &CORE_XIO_PIN33, 3, 9, 0}
 };
 #endif
-#ifdef ARDUINO_TEENSY41 || defined( ARDUINO_TEENSY_MICROMOD)
+#ifdef ARDUINO_TEENSY41
 const  QuadEncoder::ENC_Hardware_t QuadEncoder::hardware[] = {	
 	{0, 0, &CORE_XIO_PIN0, 1, 17, 1},	{1, 1, &CORE_XIO_PIN1, 1, 16, 0},
 	{2, 2, &CORE_XIO_PIN2, 3, 6, 0},	{3, 3, &CORE_XIO_PIN3, 3, 7, 0},
