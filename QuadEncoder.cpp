@@ -13,7 +13,8 @@ const QuadEncoder::ENC_Channel_t QuadEncoder::channel[] = {
 const uint8_t QuadEncoder::_channel_count =  (sizeof(QuadEncoder::channel)/sizeof(QuadEncoder::channel[0]));
 
 //xbara1 pin config
-// idx, pin, *reg, alt
+// idx, pin, *reg, alt,xbarIO, xbarMUX
+
 #if defined( ARDUINO_TEENSY40)
 const  QuadEncoder::ENC_Hardware_t QuadEncoder::hardware[] = {	
 	{0, 0, &CORE_XIO_PIN0, 1, 17, 1},	{1, 1, &CORE_XIO_PIN1, 1, 16, 0},
@@ -44,10 +45,8 @@ const  QuadEncoder::ENC_Hardware_t QuadEncoder::hardware[] = {
 	{4, 4, &CORE_XIO_PIN4,3, 8, 0},		{5, 5, &CORE_XIO_PIN5, 3, 17, 0},
 	{6, 7, &CORE_XIO_PIN7, 1, 15, 1},	{7, 8, &CORE_XIO_PIN8, 1, 14, 1},
 	{8, 30, &CORE_XIO_PIN30, 1, 23, 0},	{9, 31, &CORE_XIO_PIN31, 1, 22, 0},
-	{10, 33, &CORE_XIO_PIN33, 3, 9, 0},	{11, 36, &CORE_XIO_PIN36, 3, 5, 0},
-	{12, 37, &CORE_XIO_PIN37, 3, 4, 0}
-	// TODO: set the values for PIN36 and PIN37 correctly
-
+	{10, 33, &CORE_XIO_PIN33, 3, 9, 0},	{11, 36, &CORE_XIO_PIN36, 3, 5, 1},
+	{12, 37, &CORE_XIO_PIN37, 3, 4, 1}
 };
 #endif
 const uint8_t QuadEncoder::_hardware_count =  (sizeof(QuadEncoder::hardware)/sizeof(QuadEncoder::hardware[0]));
