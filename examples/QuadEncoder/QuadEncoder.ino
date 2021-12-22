@@ -57,6 +57,7 @@ void loop(){
     //resets counter to positionInitialValue so compare 
     //will hit every 200
     myEnc2.write(myEnc2.EncConfig.positionInitialValue);
+	myEnc2.resetCompareInterupt();
     Serial.print("Compare Value Hit for Encoder 2:  ");
     Serial.println(myEnc2.compareValueFlag);
     Serial.println();
