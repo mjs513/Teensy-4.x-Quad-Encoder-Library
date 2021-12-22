@@ -547,6 +547,13 @@ void QuadEncoder::isr(uint8_t index)
 	if (ENC_CTRL_CMPIRQ_MASK == (ENC_CTRL_CMPIRQ_MASK & channel[index].ENC->CTRL))
     {
 		compareValueFlag = 1;
+		// 12/03/21 JWP add line below to disable compare interrupt
+		channel[index].ENC->CTRL &= ~ENC_CTRL_CMPIE_MASK;
 		clearStatusFlags(_positionCompareFlag, index);
 	}
+}
+
+void QuadEncoder::resetCompareInterupt()
+{
+	channel[_encoder_ch].ENC->CTRL |= ENC_CTRL_CMPIE_MASK;
 }
