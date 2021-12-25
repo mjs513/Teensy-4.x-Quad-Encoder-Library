@@ -62,7 +62,7 @@ Current available parameters:
 		bool positionMatchMode;
 		
 		/* Position Compare Enabled. */
-		bool positionCompareMode;
+		bool positionCompareMode;   **<< NEW examples updated **
 		/*!< Position compare value. The available value is a 32-bit number.*/
 		uint32_t positionCompareValue;   
 
