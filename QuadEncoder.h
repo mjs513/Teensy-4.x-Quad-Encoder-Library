@@ -130,6 +130,8 @@ public:
 		/* 0 - POSMATCH pulses when a match occurs between the	position counters (POS) and the compare value (COMP). 1 - POSMATCH pulses when any position counter register is read. */
 		bool positionMatchMode;
 		
+		/* Position Compare Enabled. */
+		bool positionCompareMode;
 		/*!< Position compare value. The available value is a 32-bit number.*/
 		uint32_t positionCompareValue;   
 

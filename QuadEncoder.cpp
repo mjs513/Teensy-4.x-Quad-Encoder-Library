@@ -113,7 +113,8 @@ void QuadEncoder::getConfig1(enc_config_t *config)
     config->clearHoldCounter = DISABLE;
     config->filterCount = 0;
     config->filterSamplePeriod = 0;
-    config->positionMatchMode = DISABLE;
+    config->positionMatchMode = 0;
+	config->positionCompareMode = DISABLE;
     config->positionCompareValue = 0xffffffff;
     config->revolutionCountCondition = DISABLE;
     config->enableModuloCountMode = DISABLE;
@@ -138,6 +139,7 @@ void QuadEncoder::printConfig(enc_config_t *config)
 	
 	Serial.printf("\tfilterCount: %d\n",config->filterCount);
 	Serial.printf("\tfilterSamplePeriod: %d\n",config->filterSamplePeriod);
+	Serial.printf("\tpositionCompareMode: %x\n",config->positionCompareMode);
 	Serial.printf("\tpositionCompareValue: %x\n",config->positionCompareValue);
 	Serial.printf("\trevolutionCountCondition: %d\n",config->clearCounter);
 	Serial.printf("\tenableModuloCountMode: %d\n",config->clearHoldCounter);
@@ -382,7 +384,7 @@ void QuadEncoder::enableInterrupts(const enc_config_t *config)
         tmp16 |= ENC_CTRL_XIE_MASK;
     }
 
-    if (config->positionMatchMode == ENABLE)
+    if (config->positionCompareMode == ENABLE)
     {
         tmp16 |= ENC_CTRL_CMPIE_MASK;
     }
