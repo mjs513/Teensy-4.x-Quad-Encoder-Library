@@ -61,8 +61,10 @@ void loop(){
     Serial.println(myEnc2.compareValueFlag);
     Serial.println();
     myEnc2.compareValueFlag = 0;
+	//Resets the compare value to 300 after initial value is set
+    myEnc2.setCompareValue(300);
     // re-enable the Compare Interrupt
-    myEnc1.enableCompareInterrupt();
+    myEnc2.enableCompareInterrupt();
 
   }
 

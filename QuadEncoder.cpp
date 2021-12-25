@@ -113,7 +113,7 @@ void QuadEncoder::getConfig1(enc_config_t *config)
     config->clearHoldCounter = DISABLE;
     config->filterCount = 0;
     config->filterSamplePeriod = 0;
-    config->positionMatchMode = 0;
+    config->positionMatchMode = false;
 	config->positionCompareMode = DISABLE;
     config->positionCompareValue = 0xffffffff;
     config->revolutionCountCondition = DISABLE;
@@ -259,6 +259,11 @@ void QuadEncoder::write(uint32_t value)
 	setConfigInitialPosition();
 }
 
+void QuadEncoder::setCompareValue(uint32_t compareValue) {
+    /* ENC_UCOMP & ENC_LCOMP. */
+    channel[_encoder_ch].ENC->UCOMP = (uint16_t)(compareValue >> 16U); /* Upper 16 bits. */
+    channel[_encoder_ch].ENC->LCOMP = (uint16_t)(compareValue);        /* Lower 16 bits. */
+}
 uint32_t QuadEncoder::getHoldPosition()
 {
     uint32_t ret32;

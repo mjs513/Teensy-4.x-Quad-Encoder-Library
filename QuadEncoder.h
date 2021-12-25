@@ -196,6 +196,7 @@ public:
 	void Init(const enc_config_t *config);
 	int32_t read();
 	void write(uint32_t value);
+	void setCompareValue(uint32_t compareValue);
 	uint32_t getHoldPosition();
 	uint16_t getPositionDifference();
 	uint16_t getHoldDifference();
