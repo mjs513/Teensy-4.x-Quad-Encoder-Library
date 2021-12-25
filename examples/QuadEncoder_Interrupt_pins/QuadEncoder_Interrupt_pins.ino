@@ -14,6 +14,7 @@ void setup()
 
   /* Initialize the ENC module. */
   myEnc1.setInitConfig();
+  myEnc1.EncConfig.IndexTrigger = ENABLE;  //enable to  use index counter
   myEnc1.EncConfig.INDEXTriggerMode = RISING_EDGE;
 
   myEnc1.init();

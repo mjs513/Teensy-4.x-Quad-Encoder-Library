@@ -28,7 +28,7 @@ void setup()
   
   myEnc2.setInitConfig();  //
   myEnc2.EncConfig.positionInitialValue = 160;
-  myEnc2.EncConfig.positionMatchMode = ENABLE;
+  myEnc2.EncConfig.positionCompareMode = ENABLE;
   myEnc2.EncConfig.positionCompareValue = 200;
   myEnc2.EncConfig.filterCount = 5;
   myEnc2.EncConfig.filterSamplePeriod = 255;
@@ -55,13 +55,15 @@ void loop(){
   if(myEnc2.compareValueFlag == 1) {
     //myEnc2.init();
     //resets counter to positionInitialValue so compare 
-    //will hit every 200
+    //will hit every positionCompareValue
     myEnc2.write(myEnc2.EncConfig.positionInitialValue);
-	myEnc2.resetCompareInterupt();
     Serial.print("Compare Value Hit for Encoder 2:  ");
     Serial.println(myEnc2.compareValueFlag);
     Serial.println();
     myEnc2.compareValueFlag = 0;
+    // re-enable the Compare Interrupt
+    myEnc1.enableCompareInterrupt();
+
   }
 
   if(mCurPosValue1 != old_position1){

@@ -555,7 +555,7 @@ void QuadEncoder::isr(uint8_t index)
 	}
 }
 
-void QuadEncoder::resetCompareInterupt()
+void QuadEncoder::enableCompareInterrupt()
 {
 	channel[_encoder_ch].ENC->CTRL |= ENC_CTRL_CMPIE_MASK;
 }
