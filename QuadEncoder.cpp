@@ -106,7 +106,7 @@ void QuadEncoder::getConfig1(enc_config_t *config)
     config->enableReverseDirection = DISABLE;
     config->decoderWorkMode = DISABLE;
     config->HOMETriggerMode = DISABLE;
-    config->INDEXTriggerMode = DISABLE;
+    config->INDEXTriggerMode = 0;
 	config->IndexTrigger = DISABLE;
 	config->HomeTrigger = DISABLE;
     config->clearCounter = DISABLE;
@@ -169,7 +169,7 @@ void QuadEncoder::Init(const enc_config_t *config)
     tmp16 = channel[_encoder_ch].ENC->CTRL & (uint16_t)(~(ENC_CTRL_W1C_FLAGS | ENC_CTRL_HIP_MASK | ENC_CTRL_HNE_MASK | ENC_CTRL_REV_MASK | ENC_CTRL_PH1_MASK | ENC_CTRL_XIP_MASK | ENC_CTRL_XNE_MASK | ENC_CTRL_WDE_MASK));
 	
     /* For HOME trigger. */
-    if (config->HOMETriggerMode != DISABLE)
+    if (config->HOMETriggerMode != 0)
     {
         tmp16 |= ENC_CTRL_HIP_MASK;
         if (FALLING_EDGE == config->HOMETriggerMode)
@@ -188,7 +188,7 @@ void QuadEncoder::Init(const enc_config_t *config)
         tmp16 |= ENC_CTRL_PH1_MASK;
     }
     /* For INDEX trigger. */
-    if (DISABLE != config->INDEXTriggerMode)
+    if (config->INDEXTriggerMode !=  0 )
     {
         tmp16 |= ENC_CTRL_XIP_MASK;
         if (FALLING_EDGE == config->INDEXTriggerMode)
