@@ -3,7 +3,7 @@ Library based on NXP Quad Encoder SDK driver for the Encoder module but modified
 
 There are 4 hardware quadrature encoder channels available the Teensy 4.x.  The Teensy 4.x Encoders are supported on pins: 0, 1, 2, 3, 4, 5, 7, 8, 30, 31 and 33. On the T4.1 the following additional pins are supported: 36 and 37.
 
-WARNING! Pins 0, 5 and 37 share the same internal crossbar connections and are as such exclusive...pick one or the other.  Same thing applies to pins 1 and 36
+WARNING! Pins 0, 5 and 37 share the same internal crossbar connections and are as such exclusive...pick one or the other.  Same thing applies to pins 1 / 36 and 5 / 37.
 
 For Teensy 4.0: pins 0-8, 30, 31, 33 are supported.
 For Teensy 4.1: pins 0-8, 30, 31, 33 and pin 37 are supported.
