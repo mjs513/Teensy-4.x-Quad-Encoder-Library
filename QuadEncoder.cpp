@@ -139,10 +139,10 @@ void QuadEncoder::printConfig(enc_config_t *config)
 	
 	Serial.printf("\tfilterCount: %d\n",config->filterCount);
 	Serial.printf("\tfilterSamplePeriod: %d\n",config->filterSamplePeriod);
-	Serial.printf("\tpositionCompareMode: %x\n",config->positionCompareMode);
 	Serial.printf("\tpositionCompareValue: %x\n",config->positionCompareValue);
-	Serial.printf("\trevolutionCountCondition: %d\n",config->clearCounter);
-	Serial.printf("\tenableModuloCountMode: %d\n",config->clearHoldCounter);
+	Serial.printf("\trevolutionCountCondition: %d\n",config->revolutionCountCondition);
+	Serial.printf("\tenableModuloCountMode: %d\n",config->enableModuloCountMode);
+	Serial.printf("\tpositionModulusValue: %d\n", config->positionModulusValue);
 	
 	Serial.printf("\tpositionInitialValue: %d\n",config->positionInitialValue);
 	Serial.printf("\tpositionROIE: %d\n",config->positionROIE);
