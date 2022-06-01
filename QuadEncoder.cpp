@@ -8,7 +8,7 @@ const QuadEncoder::ENC_Channel_t QuadEncoder::channel[] = {
 	{1, &IMXRT_ENC1, IRQ_ENC1, isrEnc1, 66, 67, 68, 69, 70,&CCM_CCGR4,CCM_CCGR4_ENC1(CCM_CCGR_ON)},
 	{2, &IMXRT_ENC2, IRQ_ENC2, isrEnc2, 71, 72, 73, 74, 75,&CCM_CCGR4,CCM_CCGR4_ENC2(CCM_CCGR_ON)},
 	{3, &IMXRT_ENC3, IRQ_ENC3, isrEnc3, 76, 77, 78, 79, 80,&CCM_CCGR4,CCM_CCGR4_ENC3(CCM_CCGR_ON)},
-	{4, &IMXRT_ENC4, IRQ_ENC4, isrEnc4, 81, 82, 83, 84, 95,&CCM_CCGR4,CCM_CCGR4_ENC4(CCM_CCGR_ON)}
+	{4, &IMXRT_ENC4, IRQ_ENC4, isrEnc4, 81, 82, 83, 84, 85,&CCM_CCGR4,CCM_CCGR4_ENC4(CCM_CCGR_ON)}
 };
 const uint8_t QuadEncoder::_channel_count =  (sizeof(QuadEncoder::channel)/sizeof(QuadEncoder::channel[0]));
 
