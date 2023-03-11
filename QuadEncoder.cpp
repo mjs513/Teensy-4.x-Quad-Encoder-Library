@@ -82,7 +82,7 @@ QuadEncoder::QuadEncoder(uint8_t encoder_ch, uint8_t PhaseA_pin, uint8_t PhaseB_
 #endif
 	  if(PhaseA_pin != 255 )
 		enc_xbara_mapping(PhaseA_pin, PHASEA, pin_pus);
-	  if(PhaseA_pin != 255 )
+	  if(PhaseB_pin != 255 )
 		enc_xbara_mapping(PhaseB_pin, PHASEB, pin_pus);
 	  if(home_pin != 255 )
 		 enc_xbara_mapping(home_pin, HOME, pin_pus);
