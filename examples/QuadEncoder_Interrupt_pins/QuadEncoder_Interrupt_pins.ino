@@ -5,7 +5,13 @@ uint32_t mCurPosValue;
 uint32_t old_position = 0;
 uint32_t mCurPosValue1;
 uint32_t old_position1 = 0;
-QuadEncoder myEnc1(1, 0, 1, 0, 4);  // Encoder on channel 1 of 4 available
+const int channelNum = 1;
+const int phaseAPin = 0;
+const int phaseBPin = 1;
+const int pullupsRequired = 0;
+const int indexPin = 4;
+
+QuadEncoder myEnc1(channelNum, phaseAPin, phaseBPin, pullupsRequired, indexPin);  // Encoder on channel 1 of 4 available
                                    // Phase A (pin0), PhaseB(pin1), Pullups Req(0)
                              
 void setup()
