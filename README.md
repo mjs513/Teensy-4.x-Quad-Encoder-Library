@@ -5,8 +5,8 @@ There are 4 hardware quadrature encoder channels available the Teensy 4.x.  The 
 
 WARNING! Pins 0, 5 and 37 share the same internal crossbar connections and are as such exclusive...pick one or the other.  Same thing applies to pins 1 / 36 and 5 / 37.
 
-For Teensy 4.0: pins 0-8, 30, 31, 33 are supported.
-For Teensy 4.1: pins 0-8, 30, 31, 33 and pin 37 are supported.
+For Teensy 4.0: pins 0-5, 7, 8, 30, 31, 33 are supported.
+For Teensy 4.1: pins 0-5, 7, 8, 30, 31, 33 and pin 37 are supported.
 For Teensy Micromod: pins 0-5, 7, 8, 30, 31, 33, 36 and 37 are supported
 
 The constuctor is designed to tell the library what encoder channel, PhaseA and PhaseB pins to use as well as whether to use pullups on those pins.  Example:
